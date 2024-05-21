@@ -1,0 +1,454 @@
+---
+title: "Analyses for Bachelor Thesis"
+author: "Victoria Stefaanou"
+date: '2024-05-21'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Load data
+```{r}
+all_data_emo <- read.csv("/Users/victoriastefanou/Downloads/all_data_emo.csv")
+all_data <- read.csv("/Users/victoriastefanou/Downloads/all_data.csv")
+neg_all <- read.csv("/Users/victoriastefanou/Downloads/neg_all.csv")
+pos_all <- read.csv("/Users/victoriastefanou/Downloads/pos_all.csv")
+av_scores_final <- read.csv("/Users/victoriastefanou/Downloads/av_scores_final.csv")
+av_mw_score <- read.csv("/Users/victoriastefanou/Downloads/av_mw_score.csv")
+neg_desc <- read.csv("/Users/victoriastefanou/Downloads/neg_desc.csv")
+pos_desc <- read.csv("/Users/victoriastefanou/Downloads/pos_desc.csv")
+```
+
+MW percentage
+```{r}
+library(ggplot2)
+
+# Overall MW
+all_data_emo_noNA <- all_data_emo[!is.na(all_data_emo$MW), ] # remove rows where MW == NA
+
+# percentage of MW occurrences overall
+total_count_mw_all <- nrow(all_data_emo_noNA)
+mw1_count <- sum(all_data_emo_noNA$MW == 1, na.rm = TRUE)
+percentage_mw1 <- (mw1_count / total_count_mw_all) * 100
+
+# percentage of MW neu all
+total_count_mw_neu <- sum(all_data_emo_noNA$Condition =='neu')
+mw_neu <- sum(all_data_emo_noNA$MW[all_data_emo_noNA$Condition == 'neu'] == 1, na.rm = TRUE)
+percentage_mw_neu <- (mw_neu / total_count_mw_neu) * 100
+
+# percentage of MW emo all
+total_count_mw_emo <- sum(all_data_emo_noNA$Condition =='emo')
+mw_emo <- sum(all_data_emo_noNA$MW[all_data_emo_noNA$Condition == 'emo'] == 1, na.rm = TRUE)
+percentage_mw_emo <- (mw_emo / total_count_mw_emo) * 100
+
+# Negative condition MW
+# percentage of MW neu (neg condition)
+total_count_mw_neu_N <- sum(neg_all$Condition =='neu')
+mw_neu_N <- sum(neg_all$MW[neg_all$Condition == 'neu'] == 1, na.rm = TRUE)
+percentage_mw_neu_N <- (mw_neu_N / total_count_mw_neu_N) * 100
+
+# percentage of MW neg (neg condition)
+total_count_mw_neg_N <- sum(neg_all$Condition =='neg')
+mw_neg_N <- sum(neg_all$MW[neg_all$Condition == 'neg'] == 1, na.rm = TRUE)
+percentage_mw_neg_N <- (mw_neg_N / total_count_mw_neg_N) * 100
+
+# Positive condition MW
+# percentage of MW neu (pos condition)
+total_count_mw_neu_P <- sum(pos_all$Condition =='neu')
+mw_neu_P <- sum(pos_all$MW[pos_all$Condition == 'neu'] == 1, na.rm = TRUE)
+percentage_mw_neu_P <- (mw_neu_P / total_count_mw_neu_P) * 100
+
+# percentage of MW pos (pos condition)
+total_count_mw_pos_P <- sum(pos_all$Condition =='pos')
+mw_pos_P <- sum(pos_all$MW[pos_all$Condition == 'pos'] == 1, na.rm = TRUE)
+percentage_mw_pos_P <- (mw_pos_P / total_count_mw_pos_P) * 100
+
+# plot
+par(mar = c(5, 8, 4, 2) + 0.1)
+bp_mw <- barplot(
+  c(percentage_mw1, percentage_mw_neu, percentage_mw_emo, percentage_mw_neu_N, percentage_mw_neg_N, percentage_mw_neu_P, percentage_mw_pos_P),
+  names.arg = c("total", "neu/all", "emo/all", "neu/N", "neg/N", "neu/P", "pos/P"),
+  xlab = "Condition",
+  ylab = "% MW",
+  col = c("lightskyblue1", "lightskyblue3", "lightskyblue4", "mistyrose2", "mediumpurple1", "mistyrose3", "mediumpurple3"),
+  main = "Percentage MW",
+  width = 3,
+  xlim = c(0, 20),
+  ylim = c(0, 60),
+  space = 0,
+)
+text(
+  x = bp_mw, 
+  y = c(percentage_mw1, percentage_mw_neu, percentage_mw_emo, percentage_mw_neu_N, percentage_mw_neg_N, percentage_mw_neu_P, percentage_mw_pos_P), 
+  labels = c(round(percentage_mw1, 2), round(percentage_mw_neu, 2), round(percentage_mw_emo, 2), round(percentage_mw_neu_N, 2), round(percentage_mw_neg_N, 2), round(percentage_mw_neu_P, 2), round(percentage_mw_pos_P, 2)), 
+  pos = 3, 
+  col = "black"
+)
+
+print(percentage_mw1)     # 43% MW in total
+print(percentage_mw_neu)  # 45% MW in neu all
+print(percentage_mw_emo)  # 41% MW in emo all
+
+print(percentage_mw_neu_N) # 40% MW in neu (neg)
+print(percentage_mw_neg_N) # 31% MW in neg (neg)
+
+print(percentage_mw_neu_P) # 50% MW in neu (pos)
+print(percentage_mw_pos_P) # 53% MW in pos (pos)
+```
+
+MW + PC percentage
+```{r}
+only_pc <- all_data_emo[all_data_emo$MW == 1, ]
+
+# Overall PC
+# percentage of MW + PC overall
+only_pc$PC[is.na(only_pc$PC)] <- 0
+total_count_pc <- nrow(only_pc)
+pc <- sum(only_pc$PC== 1)
+percentage_pc <- (pc / total_count_pc) * 100
+
+# percentage of MW neu + PC
+total_count_pc_neu <- sum(all_data_emo$MW[all_data_emo$Condition == 'neu'] == 1, na.rm = TRUE)
+pc_neu <- sum(all_data_emo$PC[all_data_emo$Condition == 'neu'] == 1, na.rm = TRUE)
+percentage_pc_neu <- (pc_neu / total_count_pc_neu) * 100
+
+# percentage of MW emo + PC
+total_count_pc_emo <- sum(all_data_emo$MW[all_data_emo$Condition == 'emo'] == 1, na.rm = TRUE)
+pc_emo <- sum(all_data_emo$PC[all_data_emo$Condition == 'emo'] == 1, na.rm = TRUE)
+percentage_pc_emo <- (pc_emo / total_count_pc_emo) * 100
+
+# Negative Condition PC
+# percentage of MW + PC neu (neg condition)
+total_count_pc_neu_N <- sum(neg_all$MW[neg_all$Condition == 'neu'] == 1, na.rm = TRUE)
+pc_neu_N <- sum(neg_all$PC[neg_all$Condition == 'neu'] == 1, na.rm = TRUE)
+percentage_pc_neu_N <- (pc_neu_N / total_count_pc_neu_N) * 100
+
+# percentage of MW + PC neg (neg condition)
+total_count_pc_neg_N <- sum(neg_all$MW[neg_all$Condition == 'neg'] == 1, na.rm = TRUE)
+pc_neg_N <- sum(neg_all$PC[neg_all$Condition == 'neg'] == 1, na.rm = TRUE)
+percentage_pc_neg_N <- (pc_neg_N / total_count_pc_neg_N) * 100
+
+# Positive Condition PC
+# percentage of MW + PC neu (pos condition)
+total_count_pc_neu_P <- sum(pos_all$MW[pos_all$Condition == 'neu'] == 1, na.rm = TRUE)
+pc_neu_P <- sum(pos_all$PC[pos_all$Condition == 'neu'] == 1, na.rm = TRUE)
+percentage_pc_neu_P <- (pc_neu_P / total_count_pc_neu_P) * 100
+
+# percentage of MW + PC pos (pos condition)
+total_count_pc_pos_P <- sum(pos_all$MW[pos_all$Condition == 'pos'] == 1, na.rm = TRUE)
+pc_pos_P <- sum(pos_all$PC[pos_all$Condition == 'pos'] == 1, na.rm = TRUE)
+percentage_pc_pos_P <- (pc_pos_P / total_count_pc_pos_P) * 100
+
+par(mar = c(5, 8, 4, 1) + 0.1)
+
+bp_pc <- barplot(
+  c(percentage_pc, percentage_pc_neu, percentage_pc_emo, percentage_pc_neu_N, percentage_pc_neg_N, percentage_pc_neu_P, percentage_pc_pos_P),
+  names.arg = c("total", "neu/all", "emo/all", "neu/N", "neg/N", "neu/P", "pos/P"),
+  xlab = "Condition",
+  ylab = "% MW+PC",
+  col = c("lightskyblue1", "lightskyblue3", "lightskyblue4", "ivory2", "indianred", "ivory3", "brown"),
+  main = "Percentage MW+PC",
+  width = 3,
+  xlim = c(0, 20),
+  ylim = c(0, 65),
+  space = 0,
+)
+
+text(
+  x = bp_pc, 
+  y = c(percentage_pc, percentage_pc_neu, percentage_pc_emo, percentage_pc_neu_N, percentage_pc_neg_N, percentage_pc_neu_P, percentage_pc_pos_P), 
+  labels = c(round(percentage_pc, 2), round(percentage_pc_neu, 2), round(percentage_pc_emo, 2), round(percentage_pc_neu_N, 2), round(percentage_pc_neg_N, 2), round(percentage_pc_neu_P, 2), round(percentage_pc_pos_P, 2)), 
+  pos = 3, 
+  col = "black"
+)
+
+print(percentage_pc) # % MW+PC overall
+
+print(percentage_pc_neu) # 34% MW + PC in neutral condition
+print(percentage_pc_emo) # 47% MW + PC in emotional condition
+
+print(percentage_pc_neu_N) # 33% MW + PC neu in neg condition
+print(percentage_pc_neg_N) # 57% MW + PC neg in neg condition
+
+print(percentage_pc_neu_P) # 35% MW + PC neu in pos condition
+print(percentage_pc_pos_P) # 40% MW + PC pos in pos condition
+
+# rows 150 (P34, Probe 10) & 301 (P33, Probe 1) have MW == 1 and PC == NA
+```
+
+Number of Fixations Plot
+```{r}
+# Number of Fixations 20s prior MW vs. No MW
+
+# average number of fixations 20s prior to MW
+numfix_MW <- mean(all_data_emo$NumFix[all_data_emo$Condition == "neu" & all_data_emo$MW == 1], na.rm = TRUE)
+numfix_MW_emo <- mean(all_data_emo$NumFix[all_data_emo$Condition == "emo" & all_data_emo$MW == 1], na.rm = TRUE)
+
+# average number of fixations 20s prior to NO MW
+numfix_noMW <- mean(all_data_emo$NumFix[all_data_emo$Condition == "neu" & all_data_emo$MW == 0], na.rm = TRUE)
+numfix_noMW_emo <- mean(all_data_emo$NumFix[all_data_emo$Condition == "emo" & all_data_emo$MW == 0], na.rm = TRUE)
+
+bp <- barplot(
+  c(numfix_noMW, numfix_MW, numfix_noMW_emo, numfix_MW_emo),
+  names.arg = c("No MW (neu/all)", "MW (neu/all)", "No MW (emo/all)", "MW (emo/all)"),
+  xlab = "Condition",
+  ylab = "Average Number of Fixations",
+  col = c("azure3", "lightpink3", "azure4", "lightpink4"),
+  main = "Average Number of Fixations 20s Prior to MW probe",
+  width = c(0.4, 0.4, 0.4, 0.4),
+  ylim = c(0, 75),
+  space = 0,
+)
+text(
+  x = bp, 
+  y = c(numfix_noMW, numfix_MW, numfix_noMW_emo, numfix_MW_emo), 
+  labels = c(round(numfix_noMW, 2), round(numfix_MW, 2), round(numfix_noMW_emo, 2), round(numfix_MW_emo, 2)), 
+  pos = 3, 
+  col = "black"
+)
+```
+
+```{r}
+print(numfix_noMW)
+print(numfix_MW)
+print(numfix_noMW_emo)
+print(numfix_MW_emo)
+```
+
+Scatterplot FixDur & NumFix
+```{r}
+# plot number of fixations and fixation duration based on condition + MW/ no MW - to check for outliers
+
+# scatterplot numfix neu
+subset_neu_MW <- all_data_emo[all_data_emo$Condition == "neu" & all_data_emo$MW == 1, ]
+subset_neu_noMW <- all_data_emo[all_data_emo$Condition == "neu" & all_data_emo$MW == 0, ]
+
+plot(subset_neu_MW$NumFix, 
+     xlab = "NumFix",
+     ylab = "",
+     main = "NumFix Neu MW",
+     col = "blue",  
+     pch = 16       
+)
+
+plot(subset_neu_noMW$NumFix, 
+     xlab = "NumFix",
+     ylab = "",
+     main = "NumFix Neu NO MW",
+     col = "orange",  
+     pch = 16       
+)
+
+# scatterplot fixdur neu
+plot(subset_neu_MW$FixDur, 
+     xlab = "FixDur",
+     ylab = "",
+     main = "FixDur Neu MW",
+     col = "lightblue",  
+     pch = 16       
+)
+
+plot(subset_neu_noMW$FixDur, 
+     xlab = "FixDur",
+     ylab = "",
+     main = "FixDur Neu NO MW",
+     col = "springgreen4",  
+     pch = 16       
+)
+```
+
+Fixation Duration Plot
+```{r}
+# Fixation Duration 20s prior MW vs. No MW
+
+# average fixation duration 20s prior to MW
+fixdur_MW <- mean(all_data_emo$FixDur[all_data_emo$Condition == "neu" & all_data_emo$MW == 1], na.rm = TRUE)
+fixdur_MW_emo <- mean(all_data_emo$FixDur[all_data_emo$Condition == "emo" & all_data_emo$MW == 1], na.rm = TRUE)
+
+# average fixation duration 20s prior to NO MW
+fixdur_noMW <- mean(all_data_emo$FixDur[all_data_emo$Condition == "neu" & all_data_emo$MW == 0], na.rm = TRUE)
+fixdur_noMW_emo <- mean(all_data_emo$FixDur[all_data_emo$Condition == "emo" & all_data_emo$MW == 0], na.rm = TRUE)
+
+bp_2 <- barplot(
+  c(fixdur_noMW, fixdur_MW, fixdur_noMW_emo, fixdur_MW_emo),
+  names.arg = c("No MW (neu/all)", "MW (neu/all)", "No MW (emo/all)", "MW (emo/all)"),
+  xlab = "Condition",
+  ylab = "Average Durations of Fixations",
+  col = c("honeydew3", "palegreen3", "honeydew4", "palegreen4"),
+  main = "Average Durations of Fixations 20s Prior to MW probe",
+  width = c(0.5, 0.5, 0.5, 0.5),
+  ylim = c(0, 210),
+  space = 0
+)
+text(
+  x = bp_2, 
+  y = c(fixdur_noMW, fixdur_MW, fixdur_noMW_emo, fixdur_MW_emo), 
+  labels = c(round(fixdur_noMW, 2), round(fixdur_MW, 2), round(fixdur_noMW_emo, 2), round(fixdur_MW_emo, 2)), 
+  pos = 3, 
+  col = "black"
+)
+```
+
+Two Samples t-test - Flesch Reading-Ease, text difficulty, emotional valence
+```{r}
+# Flesch Reading-Ease
+flesch_neg <- c(71, 80)
+flesch_pos <- c(71, 80)
+flesch_t_test <- t.test(flesch_neg, flesch_pos)
+print(flesch_t_test)
+
+# perceived text difficulty
+dif_t_test <- t.test(pos_desc$Q5_1, neg_desc$Q5_1)
+print(dif_t_test)
+
+# perceived emotional valence
+neg_desc$Q6[neg_desc$Q6 == 2] <- 1
+val_t_test <- t.test(pos_desc$Q6, neg_desc$Q6)
+print(val_t_test)
+```
+
+GLMM MW rates - neu vs. emo
+```{r}
+# Linear Mixed Effects Model
+# use glmer() to fit a function when DV is binary (MW)
+library(lme4)
+library(car)
+
+# MW rates - all (Neutral vs. Emotional)
+MW_emo <- glmer(MW ~ Condition + (1|Participant), data=all_data_emo, family = binomial)
+summary(MW_emo)
+```
+
+GLMM MW - negative condition
+```{r}
+# MW rates - Negative Condition
+MW_neg <- glmer(MW ~ Condition + (1|Participant), data=neg_all, family = binomial)
+summary(MW_neg)
+
+# p = 0.20704 (not significant)
+```
+
+GLMM MW - positive condition
+```{r}
+# MW rates - Positive Condition
+MW_pos <- glmer(MW ~ Condition + (1|Participant), data=pos_all, family = binomial)
+summary(MW_pos)
+
+# p = 0.687 (not significant)
+```
+
+GLMM MW - neg vs. pos
+```{r}
+# MW rates - Emotional Condition (Positive vs Negative)
+subset_data <- all_data[all_data$Condition %in% c('neg', 'pos'), ]
+MW_pos_neg <- glmer(MW ~ Condition + (1|Participant), data=subset_data, family = binomial)
+summary(MW_pos_neg)
+```
+
+GLMM MW+PC - neu vs. emo
+```{r}
+# MW+PC rates - all (Neutral vs Emotional)
+MW_PC_emo <- glmer(PC ~ Condition + (1|Participant), data=only_pc, family = binomial)
+summary(MW_PC_emo)
+```
+
+GLMM MW+PC - negative condition
+```{r}
+# MW+PC - Negative condition
+
+# subset data: neg + MW == 1
+neg_pc <- neg_all[neg_all$MW == 1, ]
+
+PC_neg <- glmer(PC ~ Condition + (1|Participant), data=neg_pc, family = binomial, na.action = "na.exclude")
+summary(PC_neg)
+```
+
+GLMM MW+PC - positive condition
+```{r}
+# MW+PC - Positive conditionn
+
+# subset data: neg + MW == 1
+pos_pc <- pos_all[pos_all$MW == 1, ]
+
+PC_pos <- glmer(PC ~ Condition + (1|Participant), data=pos_pc, family = binomial, na.action = "na.exclude")
+summary(PC_pos)
+```
+
+GLMM MW+PC - neg vs. pos
+```{r}
+# MW+PC - Emotional Condition (Positive vs Negative)
+# subset data: neg/pos + MW == 1
+neg_pos_pc <- subset_data[subset_data$MW == 1, ]
+
+PC_neg_pos <- glmer(PC ~ Condition + (1|Participant), data=neg_pos_pc, family = binomial, na.action = "na.exclude")
+summary(PC_neg_pos)
+```
+
+LMM MW - NumFix
+```{r}
+# MW rates - number of fixations & condition (neu vs. emo)
+MW_numfix2 <- lmer(NumFix ~ MW + Condition + MW:Condition + (1|Participant), data = all_data_emo)
+Anova(MW_numfix2, type = "II")
+```
+
+LMM MW - FixDur
+```{r}
+# MW rates - fixation duration & condition (neu vs. emo)
+#MW_fixdur <- glmer(MW ~ FixDur + Condition + + FixDur:Condition + (1|Participant), data=all_data_emo, family = binomial)
+#summary(MW_fixdur)
+
+MW_fixdur2 <- lmer(FixDur ~ MW + Condition + MW:Condition + (1|Participant), data = all_data_emo)
+#summary(MW_fixdur2)
+Anova(MW_fixdur2, type = "II")
+```
+
+Paired t-test - Comprehension
+```{r}
+# MW rates - Comprehension score & conditions
+
+# subsets per condition
+av_neg <- av_scores_final[1:36, ]
+av_pos <- av_scores_final[37:nrow(av_scores_final), ]
+
+# MW rates - comprehension score in negative condition
+t_test_neg <- t.test(Comp ~ Condition, data = av_neg, paired = TRUE)
+print(t_test_neg)
+
+# MW rates - comprehension score in positive condition
+t_test_pos <- t.test(Comp ~ Condition, data = av_pos, paired = TRUE)
+print(t_test_pos)
+
+```
+
+Two Samples t-test - Comprehension neg/pos
+```{r}
+# MW rates - comprehension score in neg vs pos condition
+
+# subset only neg & pos condition
+av_emo <- av_scores_final[av_scores_final$Condition %in% c('neg', 'pos'), ]
+
+t_test_emo <- t.test(Comp ~ Condition, data = av_emo, paired = FALSE)
+print(t_test_emo)
+```
+
+Boxplot - comprehension negative condition
+```{r}
+ggplot(av_neg, aes(x = Condition, y = Comp)) +
+  geom_boxplot() +  
+  labs(x = "Condition", y = "Comp") +  
+  ggtitle("Boxplot of Comp by Condition")
+```
+
+Boxplot - comprehension positive condition
+```{r}
+ggplot(av_pos, aes(x = Condition, y = Comp)) +
+  geom_boxplot() +  
+  labs(x = "Condition", y = "Comp") +  
+  ggtitle("Boxplot of Comp by Condition")
+```
+
+Correlation MW - Comp score
+```{r}
+correlation <- cor.test(av_mw_score$MW, av_mw_score$Comp)
+correlation
+```
