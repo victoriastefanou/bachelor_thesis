@@ -4,4 +4,4 @@ Sometimes, while reading, our minds drift to thoughts unrelated to the text. Min
 
 The Rcode folder contains code for statistical analyses. Specifically, Generalized Linear Mixed Models, Restricted Maximum Likelihood Estimation Models and t-tests were employed to analyse MW and PC rates and eye movements.
 
-The PythonCode folder contains code for preprocessing raw BeGaze files into csv, alongside some descriptive statistics.
+The Python code zip file contains code for preprocessing raw BeGaze files into csv, alongside some descriptive statistics.
